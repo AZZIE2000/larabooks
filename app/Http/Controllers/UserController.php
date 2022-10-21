@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Authorreq;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\Request as ModelsRequest;
 
 class UserController extends Controller
 {
+    // create register form
     public function create()
     {
         return view('register');
     }
+    // register user
     public function Store(Request $request)
     {
         $formFields = $request->validate([
@@ -26,6 +30,7 @@ class UserController extends Controller
         auth()->login($user);
         return redirect('/');
     }
+    // logout user
     public function logout(Request $request)
     {
         auth()->logout();
@@ -38,6 +43,7 @@ class UserController extends Controller
     {
         return view('login');
     }
+    // login user
     public function authenticate(Request $request)
     {
         $formFields = $request->validate([
@@ -49,5 +55,29 @@ class UserController extends Controller
             return redirect('/');
         }
         return back()->withErrors(['email', 'Invalid Credentials'])->onlyInput('email');
+    }
+    public function applyFrom()
+    {
+        return view('/user.become-author', ['apps' => Authorreq::where('user_id', auth()->user()->id)]);
+    }
+    // submit become author form
+    public function joinUs(Request $request)
+    {
+
+        $formFields = $request->validate([
+            "bio" => "required",
+            "country" => "required",
+            "age" => "required",
+            "phone" => "required",
+            "gender" => "required",
+            "user_id" => "required",
+        ]);
+
+        if ($request->hasFile('image')) {
+            $formFields['image'] = $request->file('image')->store('authorsimages', 'public');
+        }
+
+        Authorreq::create($formFields);
+        return redirect("/");
     }
 }
